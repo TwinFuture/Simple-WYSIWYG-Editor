@@ -21,7 +21,7 @@
 		* @type {object}
 		* @description The object containing the current drop down for the toolbar buttons if any.
 	*/
-		dropdownToggle;
+		sweToggle;
 	/**
 		* Adds an event listener to do an element that is handled by a function.
 		* addEventListenr does not work on IE < 9.
@@ -120,15 +120,15 @@
 				* @type {string}
 				* @description The className of the parent element.
 			*/
-			// Sets the dropdownToggle to the elements parent node.
+			// Sets the sweToggle to the elements parent node.
 			// So we can handle on window click event and remove the drop down if clicked outside of it.
-			dropdownToggle = element.parentNode;
+			sweToggle = element.parentNode;
 			// is there a 3rd class name > open?
-			if (dropdownToggle.className.split(" ")[2] === 'open') {
-				dropdownToggle.setAttribute('class', 'swedrop');
+			if (sweToggle.className.split(" ")[2] === 'open') {
+				sweToggle.setAttribute('class', 'swedrop');
 				return;
 			} else {
-				dropdownToggle.setAttribute('class', 'swedrop open');
+				sweToggle.setAttribute('class', 'swedrop open');
 				return;
 			}
 			/**
@@ -566,9 +566,9 @@
 			window,
 			'click',
 			function () {
-				if (dropdownToggle && event.target.parentNode !== dropdownToggle) {
-					dropdownToggle.setAttribute('class', 'swedrop');
-					dropdownToggle = '';
+				if (sweToggle && event.target.parentNode !== sweToggle) {
+					sweToggle.setAttribute('class', 'swedrop');
+					sweToggle = '';
 				}
 			}
 		);
