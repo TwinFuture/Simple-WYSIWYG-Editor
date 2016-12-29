@@ -1,6 +1,6 @@
 	/**
 		* @module simpleEditor
-		* @description This is the main module that loads user defined plugins, Simple WYSIWYG Editor, buttons and options.
+		* @description This is the main module that loads user defined plugins, SWE, buttons and options.
 	*/
 	/*
 		* @return {function} <code>initEditor()</code> This module returns the <code>initEditor(options)</code> function for use.
@@ -11,12 +11,17 @@
 		* @type {object}
 		* @description Object containing the iframe.
 	*/
-	var wysiwyg, 
+	var swe,
 	/** 
-		* @type {boolean}
-		* @description This is the boolean for we use to determine if in source mode or WYSIWYG mode.
+		* @type {object}
+		* @description This is the boolean we use to determine if in source mode or WYSIWYG mode.
 	*/
-		source;
+		source,
+	/** 
+		* @type {object}
+		* @description The object containing the current drop down for the toolbar buttons if any.
+	*/
+		dropdownToggle;
 	/**
 		* Adds an event listener to do an element that is handled by a function.
 		* addEventListenr does not work on IE < 9.
@@ -76,6 +81,79 @@
 		return event;
 	}
 	/**
+		* Handles the click event on the SWE iframe.
+		* As the whole toolbar is assigned to only one event listener, we do all the checking here.
+		* @class
+		* @see module:simpleEditor~addEvent
+		* @todo Plan on adding justifyfull to the editor. Investigate other buttons such as videos, print, undo redo.
+	*/
+	// Handles the click event from the toolbar buttons.
+	function handleSWEClick() {
+		swe.body.focus();
+	}
+	/**
+		* Handles the click event from the toolbar buttons.
+		* As the whole toolbar is assigned to only one event listener, we do all the checking here.
+		* @class
+		* @see module:simpleEditor~addEvent
+		* @todo Plan on adding justifyfull to the editor. Investigate other buttons such as videos, print, undo redo.
+	*/
+	// Handles the click event from the toolbar buttons.
+	function handleButtons() {
+		/** 
+			* @type {event}
+			* @description The event that has just occurred.
+		*/
+		var event = event || window.event,
+		/** 
+			* @type {object}
+			* @description The events target element that has been clicked.
+		*/
+		element = event.target || event.srcElement;
+
+		//prevent default click.
+		event.preventDefault();
+		
+		// Have we clicked on a button and not just the toolbar div.
+		if (element.nodeName === 'A') {
+			/** 
+				* @type {string}
+				* @description The className of the parent element.
+			*/
+			// Sets the dropdownToggle to the elements parent node.
+			// So we can handle on window click event and remove the drop down if clicked outside of it.
+			dropdownToggle = element.parentNode;
+			// is there a 3rd class name > open?
+			if (dropdownToggle.className.split(" ")[2] === 'open') {
+				dropdownToggle.setAttribute('class', 'swedrop');
+				return;
+			} else {
+				dropdownToggle.setAttribute('class', 'swedrop open');
+				return;
+			}
+			/**
+				* @type {string}
+				* @description The command from the className of the element with the removed prefix swe-.
+			*/
+			var command = element.className.slice(8);
+			// Is it one of the default execCommands?
+			if (('|bold|italic|underline|strikethrough|justifyleft|' +
+				 'justifycenter|justifyright|fontname|fontsize|forecolor|' + 
+				 'createlink|superscript|subscript|insertunorderedlist|insertorderedlist|' +
+				 // Encased in | so we don't by chance split a command.
+				 'inserthorizontalrule|removeformat|').indexOf('|' + command + '|') > -1) {
+				 // We have a match!, just execute the command easy peasy!
+				 swe.execCommand(command);
+				 swe.body.focus();
+			}
+			//if (element.className === 'swe-bold') {
+				//insertHTML('<b>', '</b>');
+			//}
+		} else {
+			return;
+		}
+	}
+	/**
 		* I have put this in to a function to prevent floating variables.
 		* This might not be used if user has defined their own default buttons, which they should have!
 		* @class
@@ -128,53 +206,6 @@
 	function defaultSmileys() {
 		return [[]];
 	}
-	/**
-		* Handles the click event from the toolbar buttons.
-		* As the whole toolbar is assigned to only one event listener, we do all the checking here.
-		* @class
-		* @see module:simpleEditor~addEvent
-		* @todo Plan on adding justifyfull to the editor. Investigate other buttons such as videos, print, undo redo.
-	*/
-	// Handles the click event from the toolbar buttons.
-	function handleButtons() {
-		/** 
-			* @type {event}
-			* @description The event that has just occurred.
-		*/
-		var event = event || window.event,
-		/** 
-			* @type {object}
-			* @description The events target element that has been clicked.
-		*/
-		element = event.target || event.srcElement;
-
-		//prevent default click.
-		event.preventDefault();
-		
-		// Have we clicked on a button and not just the toolbar div.
-		if (element.nodeName === 'A') {
-			/** 
-				* @type {string}
-				* @description Gets the command from the className of the element and removes the prefix wysiwyg-.
-			*/
-			var command = element.className.slice(8);
-			// Is it one of the default execCommands?
-			if (('|bold|italic|underline|strikethrough|justifyleft|' +
-				 'justifycenter|justifyright|fontname|fontsize|forecolor|' + 
-				 'createlink|superscript|subscript|insertunorderedlist|insertorderedlist|' +
-				 // Encased in | so we don't by chance split a command.
-				 'inserthorizontalrule|removeformat|').indexOf('|' + command + '|') > -1) {
-				 // We have a match!, just execute the command easy peasy!
-				 wysiwyg.execCommand(command);
-				 wysiwyg.body.focus();
-			}
-			//if (element.className === 'wysiwyg-bold') {
-				//insertHTML('<b>', '</b>');
-			//}
-		} else {
-			return;
-		}
-	}
 	// Get the selected range, or set one if there isn't one set.
 	function selectedRange(sel) {
 		var	range, firstChild;
@@ -185,12 +216,12 @@
 		// If currently not in editor there is no range set, so set one.
 		// Fail-safe.
 		if (sel.getRangeAt && sel.rangeCount <= 0) {
-			firstChild = wysiwyg.body;
+			firstChild = swe.body;
 			while (firstChild.firstChild) {
 				firstChild = firstChild.firstChild;
 			}
 
-			range = wysiwyg.createRange();
+			range = swe.createRange();
 			range.setStartBefore(firstChild);
 
 			sel.addRange(range);
@@ -202,7 +233,7 @@
 	// Get the selected HTML and return it.
 	function selectedHtml(range) {
 		if (range) {
-			var div = wysiwyg.createElement('div');
+			var div = swe.createElement('div');
 			div.appendChild(range.cloneContents());
 			return div.innerHTML;
 		}
@@ -229,13 +260,13 @@
 			'td|li|ol|ul|blockquote|code|center|').indexOf('|' + elm.tagName.toLowerCase() + '|') < 0;
 	}
 	function insertHTML(start, end) {
-		var sel = wysiwyg.getSelection(),
+		var sel = swe.getSelection(),
 			range  = selectedRange(sel),
 			parent = range.commonAncestorContainer,
 			lastChild,
 			active,
 			// Create an element.
-			div = wysiwyg.createElement('div');
+			div = swe.createElement('div');
 		
 		// Put the selected HTML into the created element.
 		div.innerHTML = selectedHtml(range);
@@ -280,7 +311,7 @@
 		// If we are inserting something like a style, we could change the elements attributes
 		
 		// Create fragment
-		frag = wysiwyg.createDocumentFragment();
+		frag = swe.createDocumentFragment();
 		
 		// This saves caret position lastNode.
 		var lastNode;
@@ -321,9 +352,9 @@
 			sel.removeAllRanges();
 			sel.addRange(range);
 			// Focus back on the editor!
-			wysiwyg.body.focus();
+			swe.body.focus();
 		}
-		//wysiwyg.body.focus();
+		//swe.body.focus();
 		//base.restoreRange();
 	}
 	// Insert HTML
@@ -336,7 +367,7 @@
 			end = '</b>';
 		
 		// Focus on the editor.
-		wysiwyg.body.focus();
+		swe.body.focus();
 		
 		range = selectedRange();
 		
@@ -346,8 +377,8 @@
 		
 		start += selectedHtml() + end;
 		
-		div = wysiwyg.createElement('div');
-		node = wysiwyg.createDocumentFragment();
+		div = swe.createElement('div');
+		node = swe.createDocumentFragment();
 		div.innerHTML = start;
 
 		while (div.firstChild) {
@@ -368,30 +399,30 @@
 		// start character at which to place caret
 		var start = 0, sel;
 		// Focus on the editor.
-		wysiwyg.body.focus();
+		swe.body.focus();
 		// If browser cannot getSelection. Mainly for IE.
-		if (!wysiwyg.getSelection) {
-			//var range = wysiwyg.body.createTextRange();
-			sel = wysiwyg.body.createTextRange();
+		if (!swe.getSelection) {
+			//var range = swe.body.createTextRange();
+			sel = swe.body.createTextRange();
 			sel.moveStart('character', start);
 			sel.select(); // We don't select cause of blank space for chrome/ff
 		} else {
-			sel = wysiwyg.getSelection();
-			sel.collapse(wysiwyg.body.firstChild, start);
+			sel = swe.getSelection();
+			sel.collapse(swe.body.firstChild, start);
 		}
 	}
 
 	/**
 		* initEdiotr() is a rather large function but why split up into smaller functions
-		* when its only needed on settings up the WYSIWYG editor on load and would be more
+		* when its only needed on settings up the SWE on load and would be more
 		* code and less minification.
 		* 
-		* This sets up the iframe and buttons for the WYSIWYG editor based on user defined options,
+		* This sets up the iframe and buttons for the SWE based on user defined options,
 		* such as the textareas ID, tabindex, buttons, fonts, smileys and colours. 
 		*
 		* @class
 		* @param {object} options - options
-		* @param {string} options.id - The id of the textarea to attach the wysiwyg editor to.
+		* @param {string} options.id - The id of the textarea to attach the SWE to.
 		* @param {string} options.tabindex - The tabindex of the editor, so tabbing goes to the correct item in order.
 		* @param {string} options.plugins=bbc - A list of plugins to load, see example for format.
 		* @param {string[]} options.buttons - An array list of buttons see example for format.
@@ -399,8 +430,8 @@
 		* @param {string[]} options.smileys - An array list of smiley's see example for format.
 		* @todo Remove the bodyContent variable and put directly in iframe.
 		* @see module:simpleEditor~addEvent
-		* @example <caption>Example usage of wysiwyg.initEditor</caption>
-		* // Setup the wysiwyg editor
+		* @example <caption>Example usage of swe.initEditor</caption>
+		* // Setup the swe editor
 		* initEditor({
 		*	id: 'message',
 		*	tabindex: '1',
@@ -417,74 +448,70 @@
 		var bodyContent = '&#8203;',
 		// Get all the options.
 		// If there are no user defined buttons use default.
-			wysiwygButtons = options.buttons !== null && options.buttons !== '' ? defaultButtons() : options.buttons,
+			sweButtons = options.buttons !== null && options.buttons !== '' ? defaultButtons() : options.buttons,
 			// get plugins from options.
-			wysiwygPlugins = options.plugins !== null && options.plugins !== '' ? options.plugins : ['bbc'];
+			swePlugins = options.plugins !== null && options.plugins !== '' ? options.plugins : ['bbc'];
 		
-		for (var i in wysiwygPlugins) {
-			console.log('plugins/'+wysiwygPlugins[i]+'.js');
-			//PluginManager.register(wysiwygPlugins[i]);
+		for (var i in swePlugins) {
+			console.log('plugins/'+swePlugins[i]+'.js');
+			//PluginManager.register(swePlugins[i]);
 		}
 		// Use window.document as its supported by all browsers
 		// document is a property of window and IE needs it.	
 		// This gets the textarea with the id given.
-		wysiwygEditor = window.document.getElementById(options.id),
+		sweEditor = window.document.getElementById(options.id),
 		
-		// First we create the wysiwyg toolbar
+		// First we create the swe toolbar
 		// That will later be appended to the textareas parent node.
 		// Create the toolbar div!
-		wysiwygBar = window.document.createElement('div');
+		sweBar = window.document.createElement('div');
 		// Add swe-bar class to div.
-		wysiwygBar.setAttribute('class', 'swe-bar');
+		sweBar.setAttribute('class', 'swe-bar');
 		
 		// Split the buttons up into groups.
-		for (var i in wysiwygButtons) {
+		for (var i in sweButtons) {
 			// Create the group UL.
 			var sweGroup = window.document.createElement('ul');
 			sweGroup.setAttribute('class', 'swe-group');
-			wysiwygBar.appendChild(sweGroup);
+			sweBar.appendChild(sweGroup);
 			// Split the group into individual buttons.
-			for (var x in wysiwygButtons[i]) {
+			for (var x in sweButtons[i]) {
 				// Title is at 1 get title here
 				
 				// Create the buttons li
 				var sweButton = window.document.createElement('li');
 				// If button font is enabled get userdefined or default fonts.
-				if (wysiwygButtons[i][x][0] === 'font') {
-					// Set class of li to dropdown.
-					sweButton.setAttribute('class', 'dropdown swe');
+				if (sweButtons[i][x][0] === 'fontname') {
+					// Set class of li to swedrop.
+					sweButton.setAttribute('class', 'swedrop');
 					// Create the li's link
 					var sweButtonLink = window.document.createElement('a');
-					// Set the links attribute to wysiwyg buttons list.
-					sweButtonLink.setAttribute('class', 'dropdown-toggle swe wysiwyg-' + wysiwygButtons[i][x][0]);
+					// Set the links attribute to swe buttons list.
+					sweButtonLink.setAttribute('class', 'swedrop-toggle swe-' + sweButtons[i][x][0]);
 					// Append the button to the li.
 					sweButton.appendChild(sweButtonLink);
 					
 					var sweFonts = window.document.createElement('ul');
-					sweFonts.setAttribute('class', 'dropdown-menu');
+					sweFonts.setAttribute('class', 'swedrop-menu');
 					sweButton.appendChild(sweFonts);
 					
 					// If there are no user defined fonts use default.
-					if (wysiwygFonts !== null && wysiwygFonts !== '') {
-						var wysiwygFonts = defaultFonts();
-					}
+					var fonts = options.fonts || defaultFonts(); 
 					// Split the fonts by ,
-					for (var z in wysiwygFonts) {
+					for (var z in fonts) {
 						var fontButton = window.document.createElement('li');
-						fontButton.setAttribute('style', 'font-family:' + wysiwygFonts[z]);
+						fontButton.setAttribute('style', 'font-family:' + fonts[z]);
 						var fontButtonLink = window.document.createElement('a');
 						fontButtonLink.setAttribute('href', '#');
-						fontButtonLink.innerHTML = wysiwygFonts[z];
+						fontButtonLink.innerHTML = fonts[z];
 						fontButton.appendChild(fontButtonLink);
 						sweFonts.appendChild(fontButton);
 					}
 				} else {
-					// Set the li class to swe
-					sweButton.setAttribute('class', 'swe');
 					// Create the li's link
 					var sweButtonLink = window.document.createElement('a');
-					// Set the links attribute to wysiwyg buttons list defined by user.
-					sweButtonLink.setAttribute('class', 'wysiwyg-' + wysiwygButtons[i][x][0]);
+					// Set the links attribute to swe buttons list defined by user.
+					sweButtonLink.setAttribute('class', 'swe-' + sweButtons[i][x][0]);
 					// Append the button to the li.
 					sweButton.appendChild(sweButtonLink);
 				}
@@ -494,11 +521,11 @@
 		}
 		// Place the whole generated toolbar
 		// at the parent node of the texarea, should be above the iframe!
-		wysiwygEditor.parentNode.appendChild(wysiwygBar);
+		sweEditor.parentNode.appendChild(sweBar);
 		
-		// Adds a single event handler to the Simple WYSIWYG Editor toolbar.
+		// Adds a single event handler to the Simple SWE toolbar.
 		addEvent(
-			wysiwygBar,
+			sweBar,
 			'click',
 			handleButtons
 		);
@@ -507,36 +534,47 @@
 		/** @type element
 		*	@description Creates a new iframe.
 		*/
-		var wysiwygFrame = window.document.createElement('iframe');
+		var sweFrame = window.document.createElement('iframe');
 		// Set default iframe attributes.
-		wysiwygFrame.setAttribute('frameborder', '0');
-		wysiwygFrame.setAttribute('allowfullscreen', 'true');
-		wysiwygFrame.setAttribute('tabindex', options.tabindex);
-		wysiwygFrame.setAttribute('class', 'wysiwyg');
+		sweFrame.setAttribute('frameborder', '0');
+		sweFrame.setAttribute('allowfullscreen', 'true');
+		sweFrame.setAttribute('tabindex', options.tabindex);
+		sweFrame.setAttribute('class', 'swe-frame');
 		
 		// Append the iframe to the parent of the textarea.
 		// Hopefully nothing is before that :S
-		wysiwygEditor.parentNode.appendChild(wysiwygFrame);
+		sweEditor.parentNode.appendChild(sweFrame);
 		
 		// Sets default vars depending on browser capabilities. IE
 		// contentWindow Chrome - contentDocument IE, document maybe others.
-		wysiwyg = wysiwygFrame.contentDocument || wysiwygFrame.contentWindow.document || wysiwygFrame.document;
+		swe = sweFrame.contentDocument || sweFrame.contentWindow.document || sweFrame.document;
 
 		// Write the iframe contents to the iframe.
-		wysiwyg.open();
-		wysiwyg.write('<html><head><style>.ie * {min-height: auto !important} .ie table td {height:15px} @supports (-ms-ime-align:auto) { * { min-height: auto !important; } }</style><meta http-equiv="Content-Type" content="text/html;charset=utf-8"><link rel="stylesheet" type="text/css" href="css/simple-wysiwyg-iframe.css"></head><body contenteditable="true" style="" dir="ltr"><div>'+bodyContent+'</div></body></html>');
-		wysiwyg.close();
+		swe.open();
+		swe.write('<html><head><style>.ie * {min-height: auto !important} .ie table td {height:15px} @supports (-ms-ime-align:auto) { * { min-height: auto !important; } }</style><meta http-equiv="Content-Type" content="text/html;charset=utf-8"><link rel="stylesheet" type="text/css" href="css/swe-iframe.css"></head><body contenteditable="true" style="" dir="ltr"><div>'+bodyContent+'</div></body></html>');
+		swe.close();
 
-		// Add event handlers for the WYSIWYG editor.
+		// Add event handlers for the SWE.
 		// Focus on the editor when clicked.
 		addEvent(
-			wysiwyg.body,
+			swe,
 			'click',
-			function () { wysiwyg.body.focus(); }
+			handleSWEClick
+		);
+		// Adds an event to the window to close any drop downs.
+		addEvent(
+			window,
+			'click',
+			function () {
+				if (dropdownToggle && event.target.parentNode !== dropdownToggle) {
+					dropdownToggle.setAttribute('class', 'swedrop');
+					dropdownToggle = '';
+				}
+			}
 		);
 		// Focus on the editor once loaded.
 		// TODO:: Maybe add as a user defined option?
-		wysiwyg.body.focus();
+		swe.body.focus();
 		
 	};
 	// If not hooked for plugins/modules remove this.

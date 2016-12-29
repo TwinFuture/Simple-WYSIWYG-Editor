@@ -49,7 +49,7 @@ module.exports = function(grunt) {
 		concat: {
 			dist: {
 				src: ['src/scripts/modules/*.js', 'src/scripts/*.js'],
-				dest: 'dist/scripts/simple-wysiwyg-editor.js',
+				dest: 'dist/scripts/swe.js',
 				options: {
 					banner: ";(function(window,undefined){\n",
 					footer: "\n}(window));\n"
