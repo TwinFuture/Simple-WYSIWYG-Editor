@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+		<title>SMF WYSIWYG Editor</title>
+		<!-- Default SMF style Sheet -->
+		<!-- <link rel="stylesheet" href="index.css" type="text/css" media="all" /> -->
+		<!-- WYSIWYG editor style sheet -->
+		<link rel="stylesheet" href="css/simple-wysiwyg-editor.css" type="text/css" media="all" />
+		<script type="text/javascript" src="scripts/simple-wysiwyg-editor.js"></script>
+	</head>
+	<body>
+		<div id="wrapper">
+			<!-- The form -->
+			<h1 class="forumtitle wysiwygtitle">SMF WYSIWYG Editor</h1>
+			<p>A lightweight WYSIWYG Editor for SMF coded in pure Javascript using no frameworks.<p>
+			<p>This is a demo model and if any bugs are present please report them to me</p>
+			<p>Developed by Alec Johnson</p>
+			<form id="postmodify" name="postmodify" action="" method="post" accept-charset="UTF-8" onsubmit="return false;">
+				<div id="wysiwyg-editor">
+					<!-- Buttons -->
+					<textarea class="editor" name="message" id="message" rows="7" cols="600" tabindex="1" style="display:none;height: 220px;"></textarea>
+					<script type="text/javascript"><!-- // --><![CDATA[
+						initEditor({
+							id: 'message',
+							tabindex: '1',
+							plugins: ['test'],
+							buttons: [[[]]],
+							fonts: ['Arial', 'Arial Black'],
+							smileys: []
+						});
+						//initEditor('message', '1', wysiwygButtons, wysiwygFonts, wysiwygSmileys);
+					// ]]></script>
+				</div>
+				<button type="submit" name="submit" class="button_submit button-bounce fa-mark_as_read">POST</button>
+			</form>
+		</div>
+	</body>
+</html>

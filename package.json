@@ -1,0 +1,31 @@
+{
+  "name": "simple-wysiwyg-editor",
+  "version": "1.0.0",
+  "description": "A feather weight WYSIWYG BBCode editor, coded in plain Javascript featuring a light elegant design.",
+  "scripts": {
+    "grunt": "grunt test"
+  },
+  "files": [
+    "src/",
+    "README.md"
+  ],
+  "keywords": [
+    "wysiwyg",
+    "bbcode",
+    "textarea",
+    "bbc",
+    "html",
+    "rich",
+    "text",
+    "editor"
+  ],
+  "author": "Alec Johnson",
+  "license": "GPL-2.0",
+  "devDependencies": {
+    "grunt": "^1.0.1",
+    "grunt-contrib-concat": "^1.0.1",
+    "grunt-contrib-copy": "^1.0.0",
+    "grunt-jsdoc": "^2.1.0",
+    "tui-jsdoc-template": "^1.0.5"
+  }
+}
