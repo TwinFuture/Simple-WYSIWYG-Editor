@@ -21,7 +21,7 @@
 		* @type {object}
 		* @description The object containing the current drop down for the toolbar buttons if any.
 	*/
-		sweToggle;
+		sweDropDown;
 	/**
 		* Adds an event listener to do an element that is handled by a function.
 		* addEventListenr does not work on IE < 9.
@@ -81,15 +81,28 @@
 		return event;
 	}
 	/**
-		* Handles the click event on the SWE iframe.
-		* As the whole toolbar is assigned to only one event listener, we do all the checking here.
+		* Removes the drop down from the SWE toolbar if sweDropDown var is not empty.
+		* Currently focuses and checks if there is any drop downs by calling the handleDropDown function.
 		* @class
-		* @see module:simpleEditor~addEvent
-		* @todo Plan on adding justifyfull to the editor. Investigate other buttons such as videos, print, undo redo.
+		* @see module:simpleEditor~handleDropDown
 	*/
-	// Handles the click event from the toolbar buttons.
-	function handleSWEClick() {
-		swe.body.focus();
+	function handleDropDown() {
+		/** 
+			* @type {event}
+			* @description The event that has just occurred.
+		*/
+		var event = event || window.event,
+		/** 
+			* @type {object}
+			* @description The events target element that has been clicked or nothing if its inside the iframe.
+		*/
+		element = event ? event.target || event.srcElement : '';
+
+		if (sweDropDown && element.parentNode !== sweDropDown) {
+			sweDropDown.setAttribute('class', 'swedrop');
+			sweDropDown = '';
+			swe.body.focus();
+		}
 	}
 	/**
 		* Handles the click event from the toolbar buttons.
@@ -120,15 +133,15 @@
 				* @type {string}
 				* @description The className of the parent element.
 			*/
-			// Sets the sweToggle to the elements parent node.
+			// Sets the sweDropDown to the elements parent node.
 			// So we can handle on window click event and remove the drop down if clicked outside of it.
-			sweToggle = element.parentNode;
+			sweDropDown = element.parentNode;
 			// is there a 3rd class name > open?
-			if (sweToggle.className.split(" ")[2] === 'open') {
-				sweToggle.setAttribute('class', 'swedrop');
+			if (sweDropDown.className.split(" ")[2] === 'open') {
+				sweDropDown.setAttribute('class', 'swedrop');
 				return;
 			} else {
-				sweToggle.setAttribute('class', 'swedrop open');
+				sweDropDown.setAttribute('class', 'swedrop open');
 				return;
 			}
 			/**
@@ -554,23 +567,18 @@
 		swe.write('<html><head><style>.ie * {min-height: auto !important} .ie table td {height:15px} @supports (-ms-ime-align:auto) { * { min-height: auto !important; } }</style><meta http-equiv="Content-Type" content="text/html;charset=utf-8"><link rel="stylesheet" type="text/css" href="css/swe-iframe.css"></head><body contenteditable="true" style="" dir="ltr"><div>'+bodyContent+'</div></body></html>');
 		swe.close();
 
-		// Add event handlers for the SWE.
-		// Focus on the editor when clicked.
+		// Add event handlers for the clicking on the SWE.
+		// Focus on the editor when clicked and remove dropdown if any.
 		addEvent(
 			swe,
 			'click',
-			handleSWEClick
+			handleDropDown
 		);
 		// Adds an event to the window to close any drop downs.
 		addEvent(
 			window,
 			'click',
-			function () {
-				if (sweToggle && event.target.parentNode !== sweToggle) {
-					sweToggle.setAttribute('class', 'swedrop');
-					sweToggle = '';
-				}
-			}
+			handleDropDown
 		);
 		// Focus on the editor once loaded.
 		// TODO:: Maybe add as a user defined option?
