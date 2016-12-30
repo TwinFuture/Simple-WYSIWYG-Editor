@@ -144,6 +144,7 @@
 					swe.execCommand('fontname', false, parentFont);
 				}
 				sweDropDown.setAttribute('class', 'swedrop');
+				sweDropDown = '';
 				return;
 			}
 			// Sets the sweDropDown to the clicked parent node.
