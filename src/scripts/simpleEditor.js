@@ -133,17 +133,25 @@
 				* @type {string}
 				* @description The className of the parent element.
 			*/
-			// Sets the sweDropDown to the elements parent node.
-			// So we can handle on window click event and remove the drop down if clicked outside of it.
-			sweDropDown = element.parentNode;
-			// is there a 3rd class name > open?
-			if (sweDropDown.className.split(" ")[2] === 'open') {
+			// Toggle dropdown.
+			// Checks for existing sweDropDown and removes the open class name.
+			if (sweDropDown) {
+				var parent = element.parentNode,
+					parentFont = parent.style.fontFamily;
+
+				if (parentFont) {
+					console.log(parentFont);
+					swe.execCommand('fontname', false, parentFont);
+				}
 				sweDropDown.setAttribute('class', 'swedrop');
 				return;
-			} else {
-				sweDropDown.setAttribute('class', 'swedrop open');
-				return;
 			}
+			// Sets the sweDropDown to the clicked parent node.
+			sweDropDown = element.parentNode;
+			// Opens the dropdown.
+			sweDropDown.setAttribute('class', 'swedrop open');
+			// Check if a fontname was clicked.
+			
 			/**
 				* @type {string}
 				* @description The command from the className of the element with the removed prefix swe-.
@@ -151,7 +159,7 @@
 			var command = element.className.slice(8);
 			// Is it one of the default execCommands?
 			if (('|bold|italic|underline|strikethrough|justifyleft|' +
-				 'justifycenter|justifyright|fontname|fontsize|forecolor|' + 
+				 'justifycenter|justifyright|fontsize|forecolor|' + 
 				 'createlink|superscript|subscript|insertunorderedlist|insertorderedlist|' +
 				 // Encased in | so we don't by chance split a command.
 				 'inserthorizontalrule|removeformat|').indexOf('|' + command + '|') > -1) {
@@ -461,9 +469,9 @@
 		var bodyContent = '&#8203;',
 		// Get all the options.
 		// If there are no user defined buttons use default.
-			sweButtons = options.buttons !== null && options.buttons !== '' ? defaultButtons() : options.buttons,
+			sweButtons = options.buttons !== null && options.buttons.length > 0 ? defaultButtons() : options.buttons,
 			// get plugins from options.
-			swePlugins = options.plugins !== null && options.plugins !== '' ? options.plugins : ['bbc'];
+			swePlugins = options.plugins !== null && options.plugins.length > 0 ? options.plugins : ['bbc'];
 		
 		for (var i in swePlugins) {
 			console.log('plugins/'+swePlugins[i]+'.js');
@@ -509,7 +517,7 @@
 					sweButton.appendChild(sweFonts);
 					
 					// If there are no user defined fonts use default.
-					var fonts = options.fonts || defaultFonts(); 
+					var fonts = options.fonts !== null && options.fonts.length > 0 ? options.fonts : defaultFonts();
 					// Split the fonts by ,
 					for (var z in fonts) {
 						var fontButton = window.document.createElement('li');
