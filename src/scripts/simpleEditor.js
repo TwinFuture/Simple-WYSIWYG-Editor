@@ -21,7 +21,22 @@
 		* @type {object}
 		* @description The object containing the current drop down for the toolbar buttons if any.
 	*/
-		sweDropDown;
+		sweDropDown,
+	/** 
+		* @type {string[]}
+		* @description String array containing default or user defined fonts.
+	*/
+		fonts,
+	/** 
+		* @type {string[]}
+		* @description String array containing default or user defined font colors.
+	*/
+		fontColors,
+	/** 
+		* @type {string[]}
+		* @description String array containing default or user defined font sizes.
+	*/
+		fontSize;
 	/**
 		* Adds an event listener to do an element that is handled by a function.
 		* addEventListenr does not work on IE < 9.
@@ -171,48 +186,35 @@
 			//if (element.className === 'swe-bold') {
 				//insertHTML('<b>', '</b>');
 			//}
-		} else {
-			return;
 		}
 	}
-	/**
-		* I have put this in to a function to prevent floating variables.
-		* This might not be used if user has defined their own default buttons, which they should have!
-		* @class
-		* @return {string[]} This returns an array of default buttons for the toolbar.
-		* @see module:simpleEditor~initEditor
-		* @example <caption>Example format for toolbar buttons.</caption>
-		* // Format to list buttons.
-		* [[['bold', 'Bold'],['italic', 'Italic'],['underline', 'Underline'],['strike', 'Strike Through']],
-		* [['left', 'Align Left'],['center', 'Align Center'],['right', 'Align Right']]]
-	*/
-	function defaultButtons() {
-		//  handleButtons -> title.
-		return [[['bold', 'Bold'],['italic', 'Italic'],['underline', 'Underline'],['strikethrough', 'Strike Through']],
-				[['justifyleft', 'Align Left'],['justifycenter', 'Align Center'],['justifyright', 'Align Right']],
-				[['fontname', 'Font Style'],['fontsize', 'Font Size'],['forecolor', 'Font Color']],
-				[['image', 'Insert Image'],['createlink', 'Insert Link'],['unlink', 'Remove Link'],['email', 'Insert Email']],
-				[['superscript', 'Superscript'],['subscript', 'Subscript']],
-				[['table', 'Insert Table'],['code', 'Insert Code'],['quote', 'InsertQuote']],
-				[['insertunorderedlist', 'Insert Bullet List'],['insertorderedlist', 'Insert Numbered List']],
-				[['inserthorizontalrule', 'Insert Horizontal Rule'],['smileys', 'Smileys']],
-				[['maximize', 'Maximmize'],['removeformat', 'Remove Format'],['source', 'View Source']]];
-	}
-	/**
-		* I have put this in to a function to prevent floating variables.
-		* This might not be used if user has defined their own default fonts, which they may have.
-		* @class
-		* @return {string[]} This returns an array of default fonts for the toolbar.
-		* @see module:simpleEditor~initEditor
-		* @todo Cache the results, as this is only called once maybe don't cache.
-		* @example <caption>Example format for fonts.</caption>
-		* // Format to list fonts.
-		* ['Arial','Arial Black','Comic Sans MS','Courier New','Georgia','Impact',
-		* 'Sans-serif','Serif','Times New Roman','Trebuchet MS','Verdana']
-	*/
-	function defaultFonts() {
-		return ['Arial','Arial Black','Comic Sans MS','Courier New','Georgia','Impact',
-				'Sans-serif','Serif','Times New Roman','Trebuchet MS','Verdana']
+	function createDropDown(button) {
+		// Create the buttons li
+		var sweButton = window.document.createElement('li');
+		// Set class of li to swedrop.
+		sweButton.setAttribute('class', 'swedrop');
+		// Create the li's link
+		var sweButtonLink = window.document.createElement('a');
+		// Set the links attribute to swe buttons list.
+		sweButtonLink.setAttribute('class', 'swedrop-toggle swe-' + button);
+		// Append the button to the li.
+		sweButton.appendChild(sweButtonLink);
+		
+		var sweFonts = window.document.createElement('ul');
+		sweFonts.setAttribute('class', 'swedrop-menu');
+		sweButton.appendChild(sweFonts);
+		
+		// Split the fonts by ,
+		for (var z in fonts) {
+			var fontButton = window.document.createElement('li');
+			fontButton.setAttribute('style', 'font-family:' + fonts[z]);
+			var fontButtonLink = window.document.createElement('a');
+			fontButtonLink.setAttribute('href', '#');
+			fontButtonLink.innerHTML = fonts[z];
+			fontButton.appendChild(fontButtonLink);
+			sweFonts.appendChild(fontButton);
+		}
+		return sweButton;
 	}
 	/**
 		* I have put this in to a function to prevent floating variables.
@@ -470,7 +472,16 @@
 		var bodyContent = '&#8203;',
 		// Get all the options.
 		// If there are no user defined buttons use default.
-			sweButtons = options.buttons !== null && options.buttons.length > 0 ? defaultButtons() : options.buttons,
+			sweButtons = options.buttons !== null && options.buttons.length > 0 ? defaultButtons() :
+				[[['bold', 'Bold'],['italic', 'Italic'],['underline', 'Underline'],['strikethrough', 'Strike Through']],
+				[['justifyleft', 'Align Left'],['justifycenter', 'Align Center'],['justifyright', 'Align Right']],
+				[['fontname', 'Font Style'],['fontsize', 'Font Size'],['forecolor', 'Font Color']],
+				[['image', 'Insert Image'],['createlink', 'Insert Link'],['unlink', 'Remove Link'],['email', 'Insert Email']],
+				[['superscript', 'Superscript'],['subscript', 'Subscript']],
+				[['table', 'Insert Table'],['code', 'Insert Code'],['quote', 'InsertQuote']],
+				[['insertunorderedlist', 'Insert Bullet List'],['insertorderedlist', 'Insert Numbered List']],
+				[['inserthorizontalrule', 'Insert Horizontal Rule'],['smileys', 'Smileys']],
+				[['maximize', 'Maximmize'],['removeformat', 'Remove Format'],['source', 'View Source']]],
 			// get plugins from options.
 			swePlugins = options.plugins !== null && options.plugins.length > 0 ? options.plugins : ['bbc'];
 		
@@ -499,44 +510,35 @@
 			// Split the group into individual buttons.
 			for (var x in sweButtons[i]) {
 				// Title is at 1 get title here
-				
-				// Create the buttons li
-				var sweButton = window.document.createElement('li');
 				// If button font is enabled get userdefined or default fonts.
 				if (sweButtons[i][x][0] === 'fontname') {
-					// Set class of li to swedrop.
-					sweButton.setAttribute('class', 'swedrop');
-					// Create the li's link
-					var sweButtonLink = window.document.createElement('a');
-					// Set the links attribute to swe buttons list.
-					sweButtonLink.setAttribute('class', 'swedrop-toggle swe-' + sweButtons[i][x][0]);
-					// Append the button to the li.
-					sweButton.appendChild(sweButtonLink);
-					
-					var sweFonts = window.document.createElement('ul');
-					sweFonts.setAttribute('class', 'swedrop-menu');
-					sweButton.appendChild(sweFonts);
-					
 					// If there are no user defined fonts use default.
-					var fonts = options.fonts !== null && options.fonts.length > 0 ? options.fonts : defaultFonts();
-					// Split the fonts by ,
-					for (var z in fonts) {
-						var fontButton = window.document.createElement('li');
-						fontButton.setAttribute('style', 'font-family:' + fonts[z]);
-						var fontButtonLink = window.document.createElement('a');
-						fontButtonLink.setAttribute('href', '#');
-						fontButtonLink.innerHTML = fonts[z];
-						fontButton.appendChild(fontButtonLink);
-						sweFonts.appendChild(fontButton);
-					}
-				} else {
-					// Create the li's link
-					var sweButtonLink = window.document.createElement('a');
-					// Set the links attribute to swe buttons list defined by user.
-					sweButtonLink.setAttribute('class', 'swe-' + sweButtons[i][x][0]);
-					// Append the button to the li.
-					sweButton.appendChild(sweButtonLink);
+					fonts = options.fonts !== null && options.fonts.length > 0 ? options.fonts :
+							['Arial','Arial Black','Comic Sans MS','Courier New','Georgia','Impact',
+							'Sans-serif','Serif','Times New Roman','Trebuchet MS','Verdana'];
+					// We have a match!, just execute the command easy peasy!
+					createDropDown(sweButtons[i][x][0], 'HTML HERE');
 				}
+				if (sweButtons[i][x][0] === 'fontsize') {
+					// If there are no user defined fonts use default.
+					fontSize = ['x-small', 'small', 'medium', 'large', 'x-large', 'xx-large'];
+					createDropDown(sweButtons[i][x][0], 'HTML HERE');
+				}
+				if (sweButtons[i][x][0] === 'forecolor') {
+					// If there are no user defined fonts use default.
+					fontColor = options.colors !== null && options.colors.length > 0 ? options.colors : 
+								['white', 'black', 'red', 'yellow', 'pink', 'green', 'orange', 'purple', 'blue',
+								'beige', 'brown', 'teal', 'navy', 'maroon', 'limegreen'];
+					createDropDown(sweButtons[i][x][0], 'HTML HERE');
+				}
+				// Create the buttons li
+				var sweButton = window.document.createElement('li');
+				// Create the li's link
+				var sweButtonLink = window.document.createElement('a');
+				// Set the links attribute to swe buttons list defined by user.
+				sweButtonLink.setAttribute('class', 'swe-' + sweButtons[i][x][0]);
+				// Append the button to the li.
+				sweButton.appendChild(sweButtonLink);
 				// Append the li to the ul group
 				sweGroup.appendChild(sweButton);
 			}
