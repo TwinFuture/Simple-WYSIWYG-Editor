@@ -1,3 +1,14 @@
+.ie * {
+	min-height: auto !important
+}
+.ie table td {
+	height:15px
+}
+@supports (-ms-ime-align:auto) {
+	* {
+		min-height: auto !important;
+	}
+}
 body,
 code:before,
 html,
